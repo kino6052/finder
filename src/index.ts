@@ -282,7 +282,8 @@ function sort(paths: Iterable<Path>): Path[] {
   return Array.from(paths).sort((a, b) => penalty(a) - penalty(b))
 }
 
-function* optimize(path: Path, input: Element) {
+function* optimize(path: Path, input: Element, counter = 0) {
+  if (counter > 1000) return path;
   if (path.length > 2 && path.length > config.optimizedMinLength) {
     for (let i = 1; i < path.length - 1; i++) {
       const newPath = [...path]
@@ -290,7 +291,7 @@ function* optimize(path: Path, input: Element) {
 
       if (unique(newPath) && same(newPath, input)) {
         yield newPath
-        yield* optimize(newPath, input)
+        yield* optimize(newPath, input, ++counter)
       }
     }
   }
