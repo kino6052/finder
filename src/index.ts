@@ -27,6 +27,8 @@ export type Options = {
 let config: Options
 let rootDocument: Document | Element
 
+const THRESHOLD = 100; // Naive way of preventing endless recursion
+
 export default function (input: Element, options?: Partial<Options>) {
   if (input.nodeType !== Node.ELEMENT_NODE) {
     throw new Error(`Can't generate CSS selector for non-element node type.`)
@@ -56,7 +58,15 @@ export default function (input: Element, options?: Partial<Options>) {
         bottomUpSearch(input, Limit.One)))
 
   if (path) {
-    const optimized = sort(optimize(path, input))
+    const getOptimized = () => {
+        const val = [];
+        const generator = optimize(path, input);
+        for (let i = 0; i < THRESHOLD; i++) {
+            val.push(generator.next().value);
+        }
+        return val || [];
+    }
+    const optimized = sort(getOptimized());
 
     if (optimized.length > 0) {
       path = optimized[0]
